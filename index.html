@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CCA Schema — Portable codebooks for content analysis</title>
+  <meta name="description" content="CCA Schema is a compact JSON standard for portable, executable classification codebooks used in manual and computational content analysis.">
+  <meta name="theme-color" content="#0b1733">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1733'/%3E%3Cpath d='M22 17h23v8H29v14h16v8H22z' fill='%2369d6e8'/%3E%3Ccircle cx='18' cy='21' r='4' fill='%23ffb454'/%3E%3Ccircle cx='18' cy='43' r='4' fill='%23ffb454'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --navy: #0b1733;
+      --navy-2: #14264d;
+      --ink: #17243f;
+      --muted: #60708e;
+      --paper: #f7f9fd;
+      --white: #ffffff;
+      --line: #dce3f0;
+      --blue: #0e75d8;
+      --cyan: #69d6e8;
+      --cyan-pale: #e7f9fc;
+      --orange: #f19a38;
+      --orange-pale: #fff3e2;
+      --green: #147d64;
+      --green-pale: #e8f7f2;
+      --red: #b8414b;
+      --red-pale: #fff0f1;
+      --code: #091226;
+      --shadow: 0 18px 50px rgba(11, 23, 51, .10);
+      --radius: 18px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 86px; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 85% 4%, rgba(105,214,232,.16), transparent 24rem),
+        linear-gradient(180deg, #fbfcff 0, var(--paper) 28rem, #fff 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--blue); text-underline-offset: 3px; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid rgba(14,117,216,.34); outline-offset: 3px; }
+
+    .skip-link {
+      position: fixed; left: 1rem; top: -5rem; z-index: 100;
+      padding: .7rem 1rem; color: white; background: var(--navy); border-radius: 8px;
+    }
+    .skip-link:focus { top: 1rem; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,.9); backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(220,227,240,.9);
+    }
+    .nav {
+      max-width: var(--max); margin: auto; min-height: 70px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .brand { display: flex; align-items: center; color: var(--navy); text-decoration: none; }
+    .brand-logo { display: block; width: 174px; height: auto; max-height: 52px; object-fit: contain; object-position: left center; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 10px; background: var(--navy); position: relative; flex: none;
+    }
+    .brand-mark::before { content: ""; position: absolute; left: 13px; top: 9px; width: 16px; height: 19px; border: 4px solid var(--cyan); border-right: 0; }
+    .brand-mark::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--orange); left: 7px; top: 10px; box-shadow: 0 14px 0 var(--orange); }
+    .nav-links { display: flex; align-items: center; gap: 20px; }
+    .nav-links a { color: #3f4e6c; text-decoration: none; font-size: .92rem; font-weight: 620; }
+    .nav-links a:hover { color: var(--blue); }
+    .version-chip { padding: .32rem .62rem; border-radius: 999px; background: var(--orange-pale); color: #8a4d0c; font: 700 .75rem/1.2 ui-monospace, monospace; }
+
+    main { overflow: hidden; }
+    .wrap { max-width: var(--max); margin: auto; padding-inline: 24px; }
+    .hero { padding: 78px 0 66px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr); gap: 64px; align-items: center; }
+    .eyebrow { margin: 0 0 16px; color: var(--blue); text-transform: uppercase; letter-spacing: .14em; font-size: .76rem; font-weight: 800; }
+    h1, h2, h3 { color: var(--navy); line-height: 1.12; letter-spacing: -.025em; }
+    h1 { max-width: 740px; margin: 0; font-size: clamp(2.6rem, 6vw, 5.35rem); }
+    h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); }
+    h3 { margin: 0 0 .55rem; font-size: 1.25rem; }
+    .hero-copy { max-width: 680px; margin: 24px 0 28px; font-size: 1.18rem; color: #465675; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 44px; padding: .72rem 1rem; border-radius: 10px; border: 1px solid var(--line);
+      background: white; color: var(--navy); font-weight: 720; text-decoration: none;
+    }
+    .btn:hover { border-color: #aebbd1; transform: translateY(-1px); }
+    .btn-primary { background: var(--navy); border-color: var(--navy); color: white; box-shadow: 0 8px 24px rgba(11,23,51,.18); }
+    .btn-small { min-height: 36px; padding: .45rem .72rem; font-size: .84rem; }
+    .trust-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 28px; color: var(--muted); font-size: .87rem; }
+    .trust-row span::before { content: "✓"; margin-right: 6px; color: var(--green); font-weight: 800; }
+
+    .code-window { overflow: hidden; border: 1px solid #263a63; border-radius: 20px; background: var(--code); color: #dce8ff; box-shadow: var(--shadow); }
+    .window-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #263a63; color: #93a6c9; font: 600 .76rem ui-monospace, monospace; }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 9px; height: 9px; border-radius: 50%; display: block; background: #41557d; }
+    .dots i:first-child { background: #f19a38; } .dots i:nth-child(2) { background: #69d6e8; }
+    pre { margin: 0; overflow: auto; tab-size: 2; }
+    .code-window pre { padding: 21px; font: 500 .83rem/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .token-key { color: #80d4ff; } .token-string { color: #b6e6a3; } .token-number { color: #ffc278; } .token-bool { color: #e9a4ff; }
+
+    section { padding: 88px 0; }
+    .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: end; margin-bottom: 38px; }
+    .section-head p { margin: 0; max-width: 600px; color: var(--muted); }
+    .tint { background: #f1f5fb; border-block: 1px solid var(--line); }
+
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .problem-card { padding: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    .problem-card p { margin: 0; color: var(--muted); }
+    .problem-card.accent { background: var(--navy); border-color: var(--navy); }
+    .problem-card.accent h3 { color: white; } .problem-card.accent p { color: #b9c8e5; }
+
+    .model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; }
+    .model-card { padding: 24px 20px; background: white; border: 1px solid var(--line); border-radius: 14px; }
+    .model-card .num { display: block; margin-bottom: 18px; color: var(--blue); font: 800 .8rem ui-monospace, monospace; }
+    .model-card p { margin: 0; font-size: .92rem; color: var(--muted); }
+    .principles { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .principles span { padding: .5rem .75rem; border-radius: 999px; background: var(--cyan-pale); color: #0b6170; font-size: .84rem; font-weight: 680; }
+
+    .spec-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .filter { border: 1px solid var(--line); background: white; color: var(--muted); border-radius: 999px; padding: .48rem .78rem; font-weight: 680; font-size: .84rem; }
+    .filter.active { background: var(--navy); border-color: var(--navy); color: white; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 15px 17px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .07em; background: #f9fbfe; }
+    tr:last-child td { border-bottom: 0; }
+    td code, p code, li code { color: #075ca9; background: #edf5ff; padding: .13rem .34rem; border-radius: 5px; font: 600 .88em ui-monospace, monospace; }
+    .status { display: inline-flex; border-radius: 999px; padding: .23rem .53rem; font-size: .73rem; font-weight: 760; white-space: nowrap; }
+    .required { color: #8a4d0c; background: var(--orange-pale); }
+    .optional { color: #0b6170; background: var(--cyan-pale); }
+    .detail-row { display: none; background: #f9fbfe; }
+    .field-row { cursor: pointer; }
+    .field-row:hover { background: #fbfdff; }
+    .field-row.open + .detail-row { display: table-row; }
+    .field-fragment { white-space: pre-wrap; color: #34435f; font: .82rem/1.55 ui-monospace, monospace; }
+
+    .example-shell { display: grid; grid-template-columns: 330px 1fr; border: 1px solid var(--line); border-radius: 20px; background: white; overflow: hidden; box-shadow: var(--shadow); }
+    .example-side { padding: 28px; color: white; background: var(--navy); }
+    .example-side h3 { color: white; }
+    .example-side p { color: #b9c8e5; font-size: .92rem; }
+    .example-tabs { display: grid; gap: 7px; margin-top: 24px; }
+    .example-tab { width: 100%; text-align: left; padding: .72rem .8rem; border: 1px solid #31466f; border-radius: 9px; background: transparent; color: #b9c8e5; font-weight: 700; }
+    .example-tab.active { color: var(--navy); background: var(--cyan); border-color: var(--cyan); }
+    .example-content { min-width: 0; padding: 30px; }
+    .tab-panel { display: none; } .tab-panel.active { display: block; }
+    .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .category { border: 1px solid var(--line); border-top: 4px solid var(--blue); border-radius: 12px; padding: 18px; }
+    .category:nth-child(2) { border-top-color: #7a879d; } .category:nth-child(3) { border-top-color: var(--red); }
+    .category p { color: var(--muted); font-size: .88rem; }
+    .category ul { margin: 0; padding-left: 18px; font-size: .84rem; color: #465675; }
+    .example-cases { margin-top: 20px; display: grid; gap: 10px; }
+    .case { display: grid; grid-template-columns: 86px 1fr; gap: 12px; padding: 14px; background: #f5f8fc; border-radius: 10px; }
+    .case strong { color: var(--blue); font: 700 .78rem ui-monospace, monospace; text-transform: uppercase; }
+    .case p { margin: 0; }
+    .inline-code { position: relative; overflow: hidden; border-radius: 13px; background: var(--code); color: #dce8ff; }
+    .inline-code pre { max-height: 520px; padding: 22px; font: .79rem/1.55 ui-monospace, monospace; }
+    .copy-floating { position: absolute; right: 12px; top: 12px; z-index: 2; color: white; background: #263a63; border: 1px solid #41557d; border-radius: 7px; padding: .38rem .6rem; font-size: .75rem; }
+
+    .validator-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 20px; }
+    .validator-card { padding: 22px; border: 1px solid var(--line); background: white; border-radius: var(--radius); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+    .toolbar .spacer { flex: 1; }
+    .file-label { position: relative; overflow: hidden; }
+    .file-label input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    textarea {
+      width: 100%; min-height: 460px; resize: vertical; border: 1px solid #bfcbe0; border-radius: 12px;
+      padding: 16px; color: #dce8ff; background: var(--code); font: .82rem/1.55 ui-monospace, monospace;
+    }
+    .result { min-height: 460px; }
+    .result-empty { height: 100%; min-height: 360px; display: grid; place-items: center; color: var(--muted); text-align: center; }
+    .result-head { display: flex; align-items: center; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+    .result-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; font-weight: 900; }
+    .result.ok .result-icon { color: var(--green); background: var(--green-pale); }
+    .result.bad .result-icon { color: var(--red); background: var(--red-pale); }
+    .result-head h3 { margin: 0; }
+    .result-head p { margin: 2px 0 0; color: var(--muted); font-size: .86rem; }
+    .checks { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 9px; }
+    .checks li { padding: 11px 12px; border-radius: 9px; background: #f6f8fc; font-size: .9rem; overflow-wrap: anywhere; }
+    .checks li.ok::before { content: "✓"; color: var(--green); font-weight: 900; margin-right: 9px; }
+    .checks li.error { color: #832a33; background: var(--red-pale); }
+    .checks li.error::before { content: "×"; font-weight: 900; margin-right: 9px; }
+    .checks .path { display: block; color: #72525b; font: .76rem ui-monospace, monospace; margin-top: 3px; }
+    .privacy { margin: 14px 0 0; color: var(--muted); font-size: .82rem; }
+
+    .integrate-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 28px; align-items: start; }
+    .steps { counter-reset: steps; display: grid; gap: 12px; }
+    .step { position: relative; padding: 18px 18px 18px 58px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+    .step::before { counter-increment: steps; content: counter(steps); position: absolute; left: 17px; top: 16px; width: 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; color: white; background: var(--blue); font: 800 .8rem ui-monospace, monospace; }
+    .step strong { display: block; color: var(--navy); }
+    .step span { color: var(--muted); font-size: .9rem; }
+    .code-tabs { display: flex; gap: 7px; margin-bottom: 9px; }
+    .code-tab { padding: .45rem .7rem; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--muted); font-weight: 700; }
+    .code-tab.active { color: white; background: var(--navy); border-color: var(--navy); }
+    .code-panel { display: none; } .code-panel.active { display: block; }
+
+    .mapping-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .note { padding: 20px; border-left: 4px solid var(--orange); background: var(--orange-pale); border-radius: 0 12px 12px 0; }
+    .note strong { color: #7d460d; }
+    .note p { margin: 5px 0 0; color: #765839; }
+    .conformance { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }
+    .level { padding: 20px; border: 1px solid var(--line); border-radius: 13px; background: white; }
+    .level span { display: block; margin-bottom: 8px; color: var(--blue); font: 800 .76rem ui-monospace, monospace; }
+    .level p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+    .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    details { border: 1px solid var(--line); background: white; border-radius: 12px; padding: 0 18px; }
+    summary { cursor: pointer; padding: 17px 28px 17px 0; color: var(--navy); font-weight: 730; list-style: none; position: relative; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; position: absolute; right: 2px; color: var(--blue); font-size: 1.25rem; }
+    details[open] summary::after { content: "−"; }
+    details p { margin: 0 0 18px; color: var(--muted); }
+
+    .governance { display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; }
+    .governance-card { padding: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    .governance-card p { color: var(--muted); }
+    .version-list { list-style: none; margin: 0; padding: 0; }
+    .version-list li { display: grid; grid-template-columns: 80px 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .version-list li:last-child { border-bottom: 0; }
+    .version-list code { color: var(--blue); font-weight: 800; }
+
+    footer { padding: 42px 0; color: #aebddd; background: var(--navy); }
+    .footer-grid { display: flex; justify-content: space-between; gap: 30px; align-items: center; }
+    footer strong { color: white; } footer p { margin: 4px 0 0; font-size: .86rem; }
+    footer a { color: var(--cyan); }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 16px; }
+
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 100; padding: 11px 15px; color: white; background: var(--navy); border-radius: 9px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 920px) {
+      .nav-links a:not(.version-chip) { display: none; }
+      .hero-grid, .section-head, .integrate-grid, .mapping-grid, .governance { grid-template-columns: 1fr; }
+      .hero { padding-top: 52px; }
+      .hero-grid { gap: 38px; }
+      .model-grid { grid-template-columns: 1fr 1fr; }
+      .example-shell { grid-template-columns: 1fr; }
+      .example-tabs { grid-template-columns: repeat(3, 1fr); }
+      .example-tab { text-align: center; }
+      .validator-grid { grid-template-columns: 1fr; }
+      .result { min-height: 0; }
+    }
+    @media (max-width: 620px) {
+      .wrap, .nav { padding-inline: 16px; }
+      section { padding: 66px 0; }
+      .hero { padding: 42px 0 52px; }
+      h1 { font-size: 2.65rem; }
+      .problem-grid, .model-grid, .category-grid, .conformance, .faq { grid-template-columns: 1fr; }
+      .example-content, .example-side, .validator-card { padding: 18px; }
+      .example-tabs { grid-template-columns: 1fr; }
+      .case { grid-template-columns: 1fr; }
+      .footer-grid { align-items: flex-start; flex-direction: column; }
+      .toolbar .spacer { display: none; }
+      textarea { min-height: 390px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body data-new-gr-c-s-check-loaded="8.937.0" data-gr-ext-installed="">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="CCA Schema home"><img class="brand-logo" src="data:image/png;base64,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" alt="CCA Schema"></a>
+      <div class="nav-links">
+        <a href="#specification">Specification</a>
+        <a href="#example">Example</a>
+        <a href="#validator">Validator</a>
+        <a href="#integration">Integrate</a>
+        <a class="version-chip" href="#status">Draft v0.1</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Computational content analysis</p>
+          <h1>Codebooks that people and machines can share.</h1>
+          <p class="hero-copy">CCA Schema is a compact JSON standard for describing one classification task—from coding instructions and category definitions to decision criteria and examples.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#validator">Try the validator <span aria-hidden="true">→</span></a>
+            <a class="btn" href="#example">Explore the example</a>
+            <button class="btn" type="button" data-download="schema">Download schema</button>
+          </div>
+          <div class="trust-row" aria-label="Key properties"><span>One file, one task</span><span>Model-independent</span><span>Draft 2020-12</span></div>
+        </div>
+        <div class="code-window" aria-label="Minimal CCA codebook example">
+          <div class="window-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>sentiment.cca.json</span></div>
+          <pre id="hero-code">{
+  <span class="token-key">"$schema"</span>: <span class="token-string">"https://cca-schema.org/schema/0.1/schema.json"</span>,
+  <span class="token-key">"id"</span>: <span class="token-string">"sentiment-minimal"</span>,
+  <span class="token-key">"version"</span>: <span class="token-string">"1.0.0"</span>,
+  <span class="token-key">"title"</span>: <span class="token-string">"Sentiment analysis"</span>,
+  <span class="token-key">"description"</span>: <span class="token-string">"Classifies the overall sentiment of a text."</span>,
+  <span class="token-key">"task"</span>: {
+    <span class="token-key">"instructions"</span>: <span class="token-string">"Assign the dominant sentiment."</span>,
+    <span class="token-key">"unit_of_analysis"</span>: <span class="token-string">"text passage"</span>,
+    <span class="token-key">"classification_mode"</span>: <span class="token-string">"single_label"</span>,
+    <span class="token-key">"categories"</span>: [
+      {
+        <span class="token-key">"id"</span>: <span class="token-string">"positive"</span>,
+        <span class="token-key">"label"</span>: <span class="token-string">"Positive"</span>,
+        <span class="token-key">"definition"</span>: <span class="token-string">"The text expresses a favorable evaluation."</span>
+      },
+      {
+        <span class="token-key">"id"</span>: <span class="token-string">"neutral"</span>,
+        <span class="token-key">"label"</span>: <span class="token-string">"Neutral"</span>,
+        <span class="token-key">"definition"</span>: <span class="token-string">"The text expresses no prevailing evaluation."</span>
+      },
+      {
+        <span class="token-key">"id"</span>: <span class="token-string">"negative"</span>,
+        <span class="token-key">"label"</span>: <span class="token-string">"Negative"</span>,
+        <span class="token-key">"definition"</span>: <span class="token-string">"The text expresses an unfavorable evaluation."</span>
+      }
+    ]
+  }
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="tint" id="overview">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Why a standard?</p><h2>From document to executable research instrument</h2></div>
+          <p>Codebooks are commonly distributed as PDFs, spreadsheets, or application-specific files. Their operational meaning must then be copied manually into annotation tools, prompts, and evaluation pipelines.</p>
+        </div>
+        <div class="problem-grid">
+          <article class="problem-card"><h3>One definition, many implementations</h3><p>Instructions, class boundaries, and examples remain connected to the codebook rather than being re-created separately for every model or tool.</p></article>
+          <article class="problem-card"><h3>Reproducible by construction</h3><p>A codebook ID and version can be stored with each annotation, classification job, dataset, and published evaluation.</p></article>
+          <article class="problem-card"><h3>Compatible with manual coding</h3><p>Conventional category codes, inclusion criteria, exclusion criteria, coding notes, and anchors have explicit representations.</p></article>
+          <article class="problem-card accent"><h3>A deliberately narrow scope</h3><p>One CCA document defines one classification decision. It does not contain model settings, prompts, datasets, predictions, or an entire research project.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="model">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Core model</p><h2>Four parts, one classification task</h2></div>
+          <p>The mandatory core stays small. Optional detail makes complex codebooks precise without burdening simple tasks.</p>
+        </div>
+        <div class="model-grid">
+          <article class="model-card"><span class="num">01</span><h3>Identity</h3><p>A stable ID, title, description, and semantic version.</p></article>
+          <article class="model-card"><span class="num">02</span><h3>Task</h3><p>General instructions, coding unit, mode, and optional context.</p></article>
+          <article class="model-card"><span class="num">03</span><h3>Categories</h3><p>Stable IDs, labels, definitions, criteria, notes, and aliases.</p></article>
+          <article class="model-card"><span class="num">04</span><h3>Examples</h3><p>Texts with expected labels, context, and explanations.</p></article>
+        </div>
+        <div class="principles" aria-label="Design principles"><span>Single language per document</span><span>Single- and multi-label</span><span>Stable string IDs</span><span>Examples optional</span><span>Strict validation</span></div>
+      </div>
+    </section>
+
+    <section class="tint" id="specification">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Specification</p><h2>CCA Schema v0.1 fields</h2></div>
+          <p>Click a field to inspect its constraints. Required fields define the portable minimum; optional fields add documentation and operational precision.</p>
+        </div>
+        <div class="spec-tools" role="group" aria-label="Filter fields">
+          <button class="filter active" data-filter="all" type="button">All fields</button>
+          <button class="filter" data-filter="required" type="button">Required only</button>
+          <button class="filter" data-filter="optional" type="button">Optional only</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Path</th><th>Type</th><th>Status</th><th>Purpose</th></tr></thead>
+            <tbody id="spec-body">
+        <tr class="field-row" tabindex="0" data-spec-index="0" aria-expanded="false">
+          <td><code>$schema</code></td><td>string</td><td><span class="status required">required</span></td><td>Identifies the validating JSON Schema.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">{ "type": "string", "format": "uri-reference" }</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="1" aria-expanded="false">
+          <td><code>id</code></td><td>string</td><td><span class="status required">required</span></td><td>Stable identifier for the codebook.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">{ "type": "string", "minLength": 1 }</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="2" aria-expanded="false">
+          <td><code>version</code></td><td>string</td><td><span class="status required">required</span></td><td>Semantic version of this codebook.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Pattern: major.minor.patch, with optional prerelease or build metadata.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="3" aria-expanded="false">
+          <td><code>title</code></td><td>string</td><td><span class="status required">required</span></td><td>Human-readable name of the classification task.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">A single-language string; multilingual objects are rejected.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="4" aria-expanded="false">
+          <td><code>description</code></td><td>string</td><td><span class="status required">required</span></td><td>Short description of the measured construct.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">{ "type": "string", "minLength": 1 }</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="5" aria-expanded="false">
+          <td><code>language</code></td><td>string</td><td><span class="status optional">optional</span></td><td>BCP 47 language tag for the document.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Examples: "en", "de", "en-US"</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="6" aria-expanded="false">
+          <td><code>authors / maintainers</code></td><td>string[]</td><td><span class="status optional">optional</span></td><td>People or organizations responsible for the codebook.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty, unique strings.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="7" aria-expanded="false">
+          <td><code>created_at / modified_at</code></td><td>date</td><td><span class="status optional">optional</span></td><td>ISO 8601 provenance dates.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Example: "2026-09-17"</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="8" aria-expanded="false">
+          <td><code>references</code></td><td>object[]</td><td><span class="status optional">optional</span></td><td>Citations with an optional DOI.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">{ "citation": "…", "doi": "10.…/…" }</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="9" aria-expanded="false">
+          <td><code>task.instructions</code></td><td>string</td><td><span class="status required">required</span></td><td>General coding instructions.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Markdown may be used as plain text.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="10" aria-expanded="false">
+          <td><code>task.unit_of_analysis</code></td><td>string</td><td><span class="status required">required</span></td><td>What receives one classification.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Examples: sentence, paragraph, post, document.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="11" aria-expanded="false">
+          <td><code>task.classification_mode</code></td><td>enum</td><td><span class="status required">required</span></td><td>Whether one or multiple categories may be assigned.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">"single_label" | "multi_label"</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="12" aria-expanded="false">
+          <td><code>task.context</code></td><td>string</td><td><span class="status optional">optional</span></td><td>Additional context and how it may be used.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Describe both the context unit and its interpretive role.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="13" aria-expanded="false">
+          <td><code>task.categories</code></td><td>object[]</td><td><span class="status required">required</span></td><td>Permitted classification categories.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">At least one category; category IDs must be unique.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="14" aria-expanded="false">
+          <td><code>categories[].id</code></td><td>string</td><td><span class="status required">required</span></td><td>Stable machine-facing identifier or manual code.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Examples: "positive", "102", "economic_costs"</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="15" aria-expanded="false">
+          <td><code>categories[].label</code></td><td>string</td><td><span class="status required">required</span></td><td>Human-facing category name.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">A single-language string.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="16" aria-expanded="false">
+          <td><code>categories[].definition</code></td><td>string</td><td><span class="status required">required</span></td><td>Conceptual and operational meaning.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty string.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="17" aria-expanded="false">
+          <td><code>inclusion_criteria</code></td><td>string[]</td><td><span class="status optional">optional</span></td><td>Conditions supporting assignment.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty, unique strings.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="18" aria-expanded="false">
+          <td><code>exclusion_criteria</code></td><td>string[]</td><td><span class="status optional">optional</span></td><td>Similar cases that must not be assigned.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty, unique strings.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="19" aria-expanded="false">
+          <td><code>coding_notes</code></td><td>string</td><td><span class="status optional">optional</span></td><td>Additional clarification for coders.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty string.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="20" aria-expanded="false">
+          <td><code>aliases</code></td><td>string[]</td><td><span class="status optional">optional</span></td><td>Alternative or historical category labels.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty, unique strings.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="21" aria-expanded="false">
+          <td><code>examples</code></td><td>object[]</td><td><span class="status optional">optional</span></td><td>Reference coding examples.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">May be omitted for zero-shot codebooks.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="22" aria-expanded="false">
+          <td><code>examples[].text</code></td><td>string</td><td><span class="status required">required</span></td><td>Text to classify.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Required whenever an example exists.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="23" aria-expanded="false">
+          <td><code>examples[].labels</code></td><td>string[]</td><td><span class="status required">required</span></td><td>Expected category ID or IDs.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Exactly one for single-label tasks; one or more for multi-label.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="24" aria-expanded="false">
+          <td><code>examples[].context</code></td><td>string</td><td><span class="status optional">optional</span></td><td>Additional contextual material.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty string.</div></td></tr>
+        <tr class="field-row" tabindex="0" data-spec-index="25" aria-expanded="false">
+          <td><code>examples[].explanation</code></td><td>string</td><td><span class="status optional">optional</span></td><td>Why the labels apply.</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">Non-empty string.</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="example">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Reference codebook</p><h2>Three-class sentiment analysis</h2></div>
+          <p>A complete single-label codebook with positive, neutral, and negative categories, including boundary rules and six reference examples.</p>
+        </div>
+        <div class="example-shell">
+          <aside class="example-side">
+            <h3>Sentiment analysis</h3>
+            <p>Version 1.0.0 · English · single label</p>
+            <div class="example-tabs" role="tablist" aria-label="Sentiment example views">
+              <button class="example-tab active" role="tab" aria-selected="true" data-tab="readable" type="button">Codebook</button>
+              <button class="example-tab" role="tab" aria-selected="false" data-tab="json" type="button">JSON</button>
+              <button class="example-tab" role="tab" aria-selected="false" data-tab="prompt" type="button">Prompt preview</button>
+            </div>
+            <div class="actions" style="margin-top:22px"><button class="btn btn-small" type="button" data-download="sentiment">Download example</button></div>
+          </aside>
+          <div class="example-content">
+            <div class="tab-panel active" id="tab-readable" role="tabpanel">
+              <div class="category-grid" id="category-grid"><article class="category"><h3>Positive</h3><p>The text expresses an overall favorable evaluation, approval, satisfaction, praise, hope, or other positive sentiment toward the focal subject.</p><ul><li>The text explicitly praises, recommends, approves of, or expresses satisfaction with the focal subject.</li><li>Positive evaluation clearly outweighs any negative evaluation.</li></ul></article><article class="category"><h3>Neutral</h3><p>The text expresses no discernible overall positive or negative evaluation, or positive and negative evaluations are balanced without either prevailing.</p><ul><li>The text is factual, descriptive, procedural, or interrogative without evaluative sentiment.</li><li>Positive and negative evaluations are balanced and no overall position prevails.</li></ul></article><article class="category"><h3>Negative</h3><p>The text expresses an overall unfavorable evaluation, disapproval, dissatisfaction, criticism, concern, or other negative sentiment toward the focal subject.</p><ul><li>The text explicitly criticizes, rejects, condemns, or expresses dissatisfaction with the focal subject.</li><li>Negative evaluation clearly outweighs any positive evaluation.</li></ul></article></div>
+              <div class="example-cases" id="example-cases"><article class="case"><strong>positive</strong><p>“The new version is not bad at all.”<br><small>The negated negative expression conveys a favorable evaluation.</small></p></article><article class="case"><strong>neutral</strong><p>“The committee met on Tuesday and published its report.”<br><small>The passage reports events without evaluating them.</small></p></article><article class="case"><strong>neutral</strong><p>“The report identifies both advantages and disadvantages without recommending either option.”<br><small>The passage describes a balanced assessment and communicates no prevailing evaluation.</small></p></article><article class="case"><strong>negative</strong><p>“The service is unreliable, frustrating, and not worth the price.”<br><small>Several explicit criticisms produce a clearly unfavorable overall evaluation.</small></p></article><article class="case"><strong>negative</strong><p>“Brilliant. It deleted all my work again.”<br><small>The positive word is used sarcastically; the complete passage and context convey dissatisfaction.</small></p></article></div>
+            </div>
+            <div class="tab-panel" id="tab-json" role="tabpanel">
+              <div class="inline-code"><button class="copy-floating" type="button" data-copy-target="sentiment-code">Copy</button><pre id="sentiment-code">{
+  <span class="token-key">"$schema"</span>: <span class="token-string">"https://cca-schema.org/schema/0.1/schema.json"</span>,
+  <span class="token-key">"id"</span>: <span class="token-string">"https://cca-schema.org/codebooks/sentiment-analysis-reference"</span>,
+  <span class="token-key">"version"</span>: <span class="token-string">"1.0.0"</span>,
+  <span class="token-key">"title"</span>: <span class="token-string">"Three-class sentiment analysis"</span>,
+  <span class="token-key">"description"</span>: <span class="token-string">"Classifies the overall evaluative sentiment expressed in a text as positive, neutral, or negative."</span>,
+  <span class="token-key">"language"</span>: <span class="token-string">"en"</span>,
+  <span class="token-key">"created_at"</span>: <span class="token-string">"2026-09-17"</span>,
+  <span class="token-key">"task"</span>: {
+    <span class="token-key">"instructions"</span>: "Assign exactly one category representing the overall evaluative sentiment expressed by the author or speaker toward the focal subject. Base the decision on evaluative language in the unit of analysis. Do not infer sentiment solely from the topic&amp;#<span class="token-number">039</span>;s generally positive or negative connotations. Treat factual statements without a discernible evaluation as neutral. When both positive and negative evaluations occur, assign the sentiment that is clearly dominant; assign neutral when they are balanced and no overall evaluation prevails. Interpret negation, intensifiers, idioms, and clearly supported irony or sarcasm compositionally. Use supplied context only to resolve references or meanings in the text being classified.<span class="token-string">",
+    "</span>unit_of_analysis<span class="token-string">": "</span>A single text passage supplied for classification.<span class="token-string">",
+    "</span>classification_mode<span class="token-string">": "</span>single_label<span class="token-string">",
+    "</span>context<span class="token-string">": "</span>Optional surrounding text may be used only to disambiguate references, quotations, irony, sarcasm, or the focal subject. Classify the sentiment expressed in the unit of analysis rather than the sentiment of the surrounding context.<span class="token-string">",
+    "</span>categories<span class="token-string">": [
+      {
+        "</span>id<span class="token-string">": "</span>positive<span class="token-string">",
+        "</span>label<span class="token-string">": "</span>Positive<span class="token-string">",
+        "</span>definition<span class="token-string">": "</span>The text expresses an overall favorable evaluation, approval, satisfaction, praise, hope, or other positive sentiment toward the focal subject.<span class="token-string">",
+        "</span>inclusion_criteria<span class="token-string">": [
+          "</span>The text explicitly praises, recommends, approves of, or expresses satisfaction with the focal subject.<span class="token-string">",
+          "</span>Positive evaluation clearly outweighs any negative evaluation.<span class="token-string">",
+          "</span>Negation or an idiomatic construction yields a favorable overall meaning.<span class="token-string">"
+        ],
+        "</span>exclusion_criteria<span class="token-string">": [
+          "</span>Positive words occur only in a quotation or proposition that the author or speaker rejects.<span class="token-string">",
+          "</span>The text merely reports a desirable event without expressing or attributing an evaluation.<span class="token-string">",
+          "</span>Positive and negative evaluations are balanced without a prevailing overall sentiment.<span class="token-string">"
+        ],
+        "</span>coding_notes<span class="token-string">": "</span>Do not equate excitement, politeness, or a positive topic with a positive evaluation unless the passage conveys favorable sentiment.<span class="token-string">",
+        "</span>aliases<span class="token-string">": [
+          "</span>favorable<span class="token-string">"
+        ]
+      },
+      {
+        "</span>id<span class="token-string">": "</span>neutral<span class="token-string">",
+        "</span>label<span class="token-string">": "</span>Neutral<span class="token-string">",
+        "</span>definition<span class="token-string">": "</span>The text expresses no discernible overall positive or negative evaluation, or positive and negative evaluations are balanced without either prevailing.<span class="token-string">",
+        "</span>inclusion_criteria<span class="token-string">": [
+          "</span>The text is factual, descriptive, procedural, or interrogative without evaluative sentiment.<span class="token-string">",
+          "</span>Positive and negative evaluations are balanced and no overall position prevails.<span class="token-string">",
+          "</span>The available text and context do not support a positive or negative classification.<span class="token-string">"
+        ],
+        "</span>exclusion_criteria<span class="token-string">": [
+          "</span>The sentiment is mild or implicit but nevertheless discernibly positive or negative.<span class="token-string">",
+          "</span>The text uses apparently neutral wording that has a clearly evaluative meaning in context.<span class="token-string">",
+          "</span>The text concerns a neutral topic but expresses a favorable or unfavorable evaluation of it.<span class="token-string">"
+        ],
+        "</span>coding_notes<span class="token-string">": "</span>Neutral is a substantive category, not a default for difficult cases when the text still supports a directional evaluation.<span class="token-string">",
+        "</span>aliases<span class="token-string">": [
+          "</span>no sentiment<span class="token-string">",
+          "</span>mixed or balanced<span class="token-string">"
+        ]
+      },
+      {
+        "</span>id<span class="token-string">": "</span>negative<span class="token-string">",
+        "</span>label<span class="token-string">": "</span>Negative<span class="token-string">",
+        "</span>definition<span class="token-string">": "</span>The text expresses an overall unfavorable evaluation, disapproval, dissatisfaction, criticism, concern, or other negative sentiment toward the focal subject.<span class="token-string">",
+        "</span>inclusion_criteria<span class="token-string">": [
+          "</span>The text explicitly criticizes, rejects, condemns, or expresses dissatisfaction with the focal subject.<span class="token-string">",
+          "</span>Negative evaluation clearly outweighs any positive evaluation.<span class="token-string">",
+          "</span>Negation, irony, sarcasm, or an idiomatic construction yields an unfavorable overall meaning.<span class="token-string">"
+        ],
+        "</span>exclusion_criteria<span class="token-string">": [
+          "</span>Negative words occur only in a quotation or proposition that the author or speaker rejects.<span class="token-string">",
+          "</span>The text merely reports an undesirable event without expressing or attributing an evaluation.<span class="token-string">",
+          "</span>Positive and negative evaluations are balanced without a prevailing overall sentiment.<span class="token-string">"
+        ],
+        "</span>coding_notes<span class="token-string">": "</span>Do not infer negative sentiment merely because the passage discusses conflict, risk, illness, or another negatively connoted topic.<span class="token-string">",
+        "</span>aliases<span class="token-string">": [
+          "</span>unfavorable<span class="token-string">"
+        ]
+      }
+    ]
+  },
+  "</span>examples<span class="token-string">": [
+    {
+      "</span>text<span class="token-string">": "</span>The update is excellent and makes the application much easier to use.<span class="token-string">",
+      "</span>labels<span class="token-string">": [
+        "</span>positive<span class="token-string">"
+      ],
+      "</span>explanation<span class="token-string">": "</span>The passage explicitly praises both the quality and usability of the update.<span class="token-string">"
+    },
+    {
+      "</span>text<span class="token-string">": "</span>The new version is not bad at all.<span class="token-string">",
+      "</span>labels<span class="token-string">": [
+        "</span>positive<span class="token-string">"
+      ],
+      "</span>explanation<span class="token-string">": "</span>The negated negative expression conveys a favorable evaluation.<span class="token-string">"
+    },
+    {
+      "</span>text<span class="token-string">": "</span>The committee met on Tuesday and published its report.<span class="token-string">",
+      "</span>labels<span class="token-string">": [
+        "</span>neutral<span class="token-string">"
+      ],
+      "</span>explanation<span class="token-string">": "</span>The passage reports events without evaluating them.<span class="token-string">"
+    },
+    {
+      "</span>text<span class="token-string">": "</span>The report identifies both advantages and disadvantages without recommending either option.<span class="token-string">",
+      "</span>labels<span class="token-string">": [
+        "</span>neutral<span class="token-string">"
+      ],
+      "</span>explanation<span class="token-string">": "</span>The passage describes a balanced assessment and communicates no prevailing evaluation.<span class="token-string">"
+    },
+    {
+      "</span>text<span class="token-string">": "</span>The service is unreliable, frustrating, and not worth the price.<span class="token-string">",
+      "</span>labels<span class="token-string">": [
+        "</span>negative<span class="token-string">"
+      ],
+      "</span>explanation<span class="token-string">": "</span>Several explicit criticisms produce a clearly unfavorable overall evaluation.<span class="token-string">"
+    },
+    {
+      "</span>text<span class="token-string">": "</span>Brilliant. It deleted all my work again.<span class="token-string">",
+      "</span>labels<span class="token-string">": [
+        "</span>negative<span class="token-string">"
+      ],
+      "</span>context<span class="token-string">": "</span>The speaker is reacting immediately after a software failure.<span class="token-string">",
+      "</span>explanation<span class="token-string">": "</span>The positive word is used sarcastically; the complete passage and context convey dissatisfaction."
+    }
+  ]
+}</pre></div>
+            </div>
+            <div class="tab-panel" id="tab-prompt" role="tabpanel">
+              <p style="margin-top:0;color:var(--muted)">CCA Schema does not prescribe a prompt format. An application can deterministically construct one from the codebook:</p>
+              <div class="inline-code"><button class="copy-floating" type="button" data-copy-target="prompt-code">Copy</button><pre id="prompt-code">You are performing the following classification task.
+
+TASK
+Three-class sentiment analysis
+
+INSTRUCTIONS
+Assign exactly one category representing the overall evaluative sentiment expressed by the author or speaker toward the focal subject. Base the decision on evaluative language in the unit of analysis. Do not infer sentiment solely from the topic's generally positive or negative connotations. Treat factual statements without a discernible evaluation as neutral. When both positive and negative evaluations occur, assign the sentiment that is clearly dominant; assign neutral when they are balanced and no overall evaluation prevails. Interpret negation, intensifiers, idioms, and clearly supported irony or sarcasm compositionally. Use supplied context only to resolve references or meanings in the text being classified.
+
+UNIT OF ANALYSIS
+A single text passage supplied for classification.
+
+CATEGORIES
+positive — Positive
+Definition: The text expresses an overall favorable evaluation, approval, satisfaction, praise, hope, or other positive sentiment toward the focal subject.
+
+neutral — Neutral
+Definition: The text expresses no discernible overall positive or negative evaluation, or positive and negative evaluations are balanced without either prevailing.
+
+negative — Negative
+Definition: The text expresses an overall unfavorable evaluation, disapproval, dissatisfaction, criticism, concern, or other negative sentiment toward the focal subject.
+
+Return exactly one category ID.</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tint" id="validator">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Browser validator</p><h2>Check a CCA codebook</h2></div>
+          <p>Validation runs locally in your browser. It combines the structural rules of v0.1 with CCA-specific integrity checks that ordinary JSON Schema cannot express.</p>
+        </div>
+        <div class="validator-grid">
+          <div class="validator-card">
+            <div class="toolbar">
+              <button class="btn btn-small" id="load-sentiment" type="button">Load sentiment</button>
+              <button class="btn btn-small" id="load-minimal" type="button">Load minimal</button>
+              <button class="btn btn-small" id="load-invalid" type="button">Load invalid</button>
+              <span class="spacer"></span>
+              <label class="btn btn-small file-label">Upload JSON<input id="file-input" type="file" accept="application/json,.json"></label>
+            </div>
+            <label for="validator-input" class="eyebrow" style="display:block;margin-bottom:8px">Codebook JSON</label>
+            <textarea id="validator-input" spellcheck="false" aria-describedby="privacy-note">{
+  "$schema": "https://cca-schema.org/schema/0.1/schema.json",
+  "id": "https://cca-schema.org/codebooks/sentiment-analysis-reference",
+  "version": "1.0.0",
+  "title": "Three-class sentiment analysis",
+  "description": "Classifies the overall evaluative sentiment expressed in a text as positive, neutral, or negative.",
+  "language": "en",
+  "created_at": "2026-09-17",
+  "task": {
+    "instructions": "Assign exactly one category representing the overall evaluative sentiment expressed by the author or speaker toward the focal subject. Base the decision on evaluative language in the unit of analysis. Do not infer sentiment solely from the topic's generally positive or negative connotations. Treat factual statements without a discernible evaluation as neutral. When both positive and negative evaluations occur, assign the sentiment that is clearly dominant; assign neutral when they are balanced and no overall evaluation prevails. Interpret negation, intensifiers, idioms, and clearly supported irony or sarcasm compositionally. Use supplied context only to resolve references or meanings in the text being classified.",
+    "unit_of_analysis": "A single text passage supplied for classification.",
+    "classification_mode": "single_label",
+    "context": "Optional surrounding text may be used only to disambiguate references, quotations, irony, sarcasm, or the focal subject. Classify the sentiment expressed in the unit of analysis rather than the sentiment of the surrounding context.",
+    "categories": [
+      {
+        "id": "positive",
+        "label": "Positive",
+        "definition": "The text expresses an overall favorable evaluation, approval, satisfaction, praise, hope, or other positive sentiment toward the focal subject.",
+        "inclusion_criteria": [
+          "The text explicitly praises, recommends, approves of, or expresses satisfaction with the focal subject.",
+          "Positive evaluation clearly outweighs any negative evaluation.",
+          "Negation or an idiomatic construction yields a favorable overall meaning."
+        ],
+        "exclusion_criteria": [
+          "Positive words occur only in a quotation or proposition that the author or speaker rejects.",
+          "The text merely reports a desirable event without expressing or attributing an evaluation.",
+          "Positive and negative evaluations are balanced without a prevailing overall sentiment."
+        ],
+        "coding_notes": "Do not equate excitement, politeness, or a positive topic with a positive evaluation unless the passage conveys favorable sentiment.",
+        "aliases": [
+          "favorable"
+        ]
+      },
+      {
+        "id": "neutral",
+        "label": "Neutral",
+        "definition": "The text expresses no discernible overall positive or negative evaluation, or positive and negative evaluations are balanced without either prevailing.",
+        "inclusion_criteria": [
+          "The text is factual, descriptive, procedural, or interrogative without evaluative sentiment.",
+          "Positive and negative evaluations are balanced and no overall position prevails.",
+          "The available text and context do not support a positive or negative classification."
+        ],
+        "exclusion_criteria": [
+          "The sentiment is mild or implicit but nevertheless discernibly positive or negative.",
+          "The text uses apparently neutral wording that has a clearly evaluative meaning in context.",
+          "The text concerns a neutral topic but expresses a favorable or unfavorable evaluation of it."
+        ],
+        "coding_notes": "Neutral is a substantive category, not a default for difficult cases when the text still supports a directional evaluation.",
+        "aliases": [
+          "no sentiment",
+          "mixed or balanced"
+        ]
+      },
+      {
+        "id": "negative",
+        "label": "Negative",
+        "definition": "The text expresses an overall unfavorable evaluation, disapproval, dissatisfaction, criticism, concern, or other negative sentiment toward the focal subject.",
+        "inclusion_criteria": [
+          "The text explicitly criticizes, rejects, condemns, or expresses dissatisfaction with the focal subject.",
+          "Negative evaluation clearly outweighs any positive evaluation.",
+          "Negation, irony, sarcasm, or an idiomatic construction yields an unfavorable overall meaning."
+        ],
+        "exclusion_criteria": [
+          "Negative words occur only in a quotation or proposition that the author or speaker rejects.",
+          "The text merely reports an undesirable event without expressing or attributing an evaluation.",
+          "Positive and negative evaluations are balanced without a prevailing overall sentiment."
+        ],
+        "coding_notes": "Do not infer negative sentiment merely because the passage discusses conflict, risk, illness, or another negatively connoted topic.",
+        "aliases": [
+          "unfavorable"
+        ]
+      }
+    ]
+  },
+  "examples": [
+    {
+      "text": "The update is excellent and makes the application much easier to use.",
+      "labels": [
+        "positive"
+      ],
+      "explanation": "The passage explicitly praises both the quality and usability of the update."
+    },
+    {
+      "text": "The new version is not bad at all.",
+      "labels": [
+        "positive"
+      ],
+      "explanation": "The negated negative expression conveys a favorable evaluation."
+    },
+    {
+      "text": "The committee met on Tuesday and published its report.",
+      "labels": [
+        "neutral"
+      ],
+      "explanation": "The passage reports events without evaluating them."
+    },
+    {
+      "text": "The report identifies both advantages and disadvantages without recommending either option.",
+      "labels": [
+        "neutral"
+      ],
+      "explanation": "The passage describes a balanced assessment and communicates no prevailing evaluation."
+    },
+    {
+      "text": "The service is unreliable, frustrating, and not worth the price.",
+      "labels": [
+        "negative"
+      ],
+      "explanation": "Several explicit criticisms produce a clearly unfavorable overall evaluation."
+    },
+    {
+      "text": "Brilliant. It deleted all my work again.",
+      "labels": [
+        "negative"
+      ],
+      "context": "The speaker is reacting immediately after a software failure.",
+      "explanation": "The positive word is used sarcastically; the complete passage and context convey dissatisfaction."
+    }
+  ]
+}</textarea>
+            <div class="actions" style="margin-top:12px"><button class="btn btn-primary" id="validate-button" type="button">Validate codebook</button><button class="btn" id="format-button" type="button">Format JSON</button></div>
+            <p class="privacy" id="privacy-note">Your codebook never leaves this page. Uploads are read locally and no data is transmitted.</p>
+          </div>
+          <div class="validator-card result" id="validation-result" aria-live="polite">
+            <div class="result-empty"><div><strong>No validation run yet</strong><br><span>Paste, upload, or load a codebook and select Validate.</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="integration">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Integration</p><h2>Validate outside the browser</h2></div>
+          <p>Use any Draft 2020-12 implementation for structural validation, then add two small integrity checks for category IDs and example references.</p>
+        </div>
+        <div class="integrate-grid">
+          <div class="steps">
+            <div class="step"><strong>Parse the JSON</strong><span>Reject malformed input before interpreting fields.</span></div>
+            <div class="step"><strong>Validate the structure</strong><span>Apply <code>cca-schema-0.1.schema.json</code>.</span></div>
+            <div class="step"><strong>Check integrity</strong><span>Require unique category IDs and resolvable example labels.</span></div>
+            <div class="step"><strong>Preserve identity</strong><span>Store the codebook ID and version with every job or dataset.</span></div>
+          </div>
+          <div>
+            <div class="code-tabs" role="tablist" aria-label="Validation language examples">
+              <button class="code-tab active" data-code-tab="python" type="button">Python</button>
+              <button class="code-tab" data-code-tab="javascript" type="button">JavaScript</button>
+              <button class="code-tab" data-code-tab="cli" type="button">CLI</button>
+            </div>
+            <div class="code-panel active" id="code-python"><div class="inline-code"><button class="copy-floating" type="button" data-copy-target="python-code">Copy</button><pre id="python-code">import json
+from jsonschema import Draft202012Validator, FormatChecker
+
+with open("cca-schema-0.1.schema.json", encoding="utf-8") as f:
+    schema = json.load(f)
+with open("codebook.cca.json", encoding="utf-8") as f:
+    codebook = json.load(f)
+
+validator = Draft202012Validator(schema, format_checker=FormatChecker())
+errors = sorted(validator.iter_errors(codebook), key=lambda e: list(e.absolute_path))
+
+for error in errors:
+    path = "/" + "/".join(map(str, error.absolute_path))
+    print(f"{path}: {error.message}")
+
+if not errors:
+    print("Structurally valid CCA codebook")</pre></div></div>
+            <div class="code-panel" id="code-javascript"><div class="inline-code"><button class="copy-floating" type="button" data-copy-target="js-code">Copy</button><pre id="js-code">import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+
+const ajv = new Ajv2020({ allErrors: true });
+addFormats(ajv);
+
+const validate = ajv.compile(schema);
+const valid = validate(codebook);
+
+if (!valid) console.table(validate.errors);
+else console.log("Structurally valid CCA codebook");</pre></div></div>
+            <div class="code-panel" id="code-cli"><div class="inline-code"><button class="copy-floating" type="button" data-copy-target="cli-code">Copy</button><pre id="cli-code">check-jsonschema \
+  --schemafile cca-schema-0.1.schema.json \
+  codebook.cca.json
+
+# Structural validation must be followed by CCA integrity checks:
+# 1. category IDs are unique
+# 2. example labels reference existing IDs</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tint" id="compatibility">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Compatibility</p><h2>Map an existing manual codebook</h2></div>
+          <p>Conversion retains familiar content-analysis concepts while separating distinct variables into independent, reusable task files.</p>
+        </div>
+        <div class="mapping-grid">
+          <div class="table-wrap">
+            <table><thead><tr><th>Manual codebook</th><th>CCA Schema</th></tr></thead><tbody>
+              <tr><td>Variable or task name</td><td><code>title</code></td></tr>
+              <tr><td>General instructions</td><td><code>task.instructions</code></td></tr>
+              <tr><td>Coding unit</td><td><code>task.unit_of_analysis</code></td></tr>
+              <tr><td>Category number</td><td><code>categories[].id</code></td></tr>
+              <tr><td>Category name</td><td><code>categories[].label</code></td></tr>
+              <tr><td>Include / exclude when</td><td><code>inclusion_criteria</code> / <code>exclusion_criteria</code></td></tr>
+              <tr><td>Positive or negative anchor</td><td><code>examples[].labels</code></td></tr>
+            </tbody></table>
+          </div>
+          <div>
+            <div class="note"><strong>One-task rule</strong><p>If a manual codebook defines topic, stance, actor, and sentiment variables, convert it into four independent CCA documents.</p></div>
+            <div class="conformance">
+              <article class="level"><span>LEVEL 1</span><h3>Structurally valid</h3><p>Passes the published JSON Schema, including required fields, types, enumerations, and cardinality.</p></article>
+              <article class="level"><span>LEVEL 2</span><h3>CCA-conformant</h3><p>Also has unique category IDs and no example labels that point to missing categories.</p></article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Questions</p><h2>Scope and interpretation</h2></div><p>CCA Schema standardizes the representation of a coding instrument—not its empirical quality or the behavior of a particular classifier.</p></div>
+        <div class="faq">
+          <details><summary>Why does one document describe only one task?</summary><p>A single task is the smallest portable unit. It can be imported, evaluated, versioned, and reused without also importing unrelated variables from a large project codebook.</p></details>
+          <details><summary>Why are category IDs strings?</summary><p>Strings preserve leading zeros, permit semantic identifiers such as <code>positive</code>, and avoid treating manual codes as quantities. Numeric-looking IDs such as <code>"102"</code> remain valid.</p></details>
+          <details><summary>Are examples required?</summary><p>No. A zero-shot codebook can contain only instructions and category definitions. Examples add operational guidance and can be selected as few-shot demonstrations.</p></details>
+          <details><summary>How are negative anchors represented?</summary><p>An example labeled with category B is simultaneously a negative anchor for category A when it illustrates their boundary. Its explanation can make that contrast explicit.</p></details>
+          <details><summary>Does CCA Schema define the LLM prompt?</summary><p>No. Prompt construction, reasoning fields, confidence, model parameters, seeds, retries, and evaluation metrics belong to execution profiles or applications such as CCA-Lab.</p></details>
+          <details><summary>Does a valid file define a valid measurement?</summary><p>No. Technical conformance does not establish construct validity, category completeness, intercoder reliability, or classification accuracy.</p></details>
+          <details><summary>Can it represent multi-label tasks?</summary><p>Yes. Set <code>classification_mode</code> to <code>multi_label</code>; each example may then contain more than one category ID.</p></details>
+          <details><summary>Can a codebook be multilingual?</summary><p>Not in v0.1. Each document uses one language. Translations should be separate, versioned codebooks rather than language objects inside the same file.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="tint" id="status">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Status and governance</p><h2>An experimental standard, open to refinement</h2></div><p>Version 0.1 establishes the slim core. The next step is testing it against diverse manual codebooks and independent software implementations.</p></div>
+        <div class="governance">
+          <article class="governance-card"><h3>Draft status</h3><p>CCA Schema v0.1 is intended for experimentation and interoperability testing. Until governance, licensing, and a canonical repository are finalized, implementations should preserve the exact schema URI and codebook version they use.</p><div class="actions"><button class="btn btn-primary" type="button" data-download="schema">Download v0.1</button><button class="btn" type="button" data-download="sentiment">Download reference codebook</button></div></article>
+          <article class="governance-card"><h3>Codebook versioning</h3><ul class="version-list"><li><code>Patch</code><span>Editorial correction without intended semantic change</span></li><li><code>Minor</code><span>New examples or operational clarification</span></li><li><code>Major</code><span>Categories or rules change comparability</span></li></ul></article>
+        </div>
+        <div class="note" style="margin-top:20px"><strong>Methodological limitation</strong><p>A CCA-conformant document is syntactically and internally consistent. Conformance does not establish the validity, reliability, fairness, or empirical performance of the classification task.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-grid">
+      <div><strong>CCA Schema · Draft v0.1</strong><p>Portable codebooks for manual and computational content analysis.</p></div>
+      <div class="footer-links"><a href="#specification">Specification</a><a href="#validator">Validator</a><a href="#status">Status</a><a href="https://leibniz-hbi.de/en/imprint/" target="_blank" rel="noopener noreferrer">Imprint</a></div>
+    </div>
+  </footer>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script type="application/json" id="schema-json">
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cca-schema.org/schema/0.1/schema.json",
+  "title": "CCA Schema 0.1",
+  "description": "A slim interchange schema for a single automatic or manual content-analysis classification task.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "id", "version", "title", "description", "task"],
+  "properties": {
+    "$schema": {"type": "string", "format": "uri-reference"},
+    "id": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"},
+    "title": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"},
+    "authors": {"$ref": "#/$defs/personNames"},
+    "maintainers": {"$ref": "#/$defs/personNames"},
+    "created_at": {"type": "string", "format": "date"},
+    "modified_at": {"type": "string", "format": "date"},
+    "references": {"type": "array", "items": {"$ref": "#/$defs/reference"}, "uniqueItems": true},
+    "task": {"$ref": "#/$defs/task"},
+    "examples": {"type": "array", "items": {"$ref": "#/$defs/example"}}
+  },
+  "allOf": [{"if": {"properties": {"task": {"properties": {"classification_mode": {"const": "single_label"}}, "required": ["classification_mode"]}}, "required": ["task"]}, "then": {"properties": {"examples": {"items": {"properties": {"labels": {"maxItems": 1}}}}}}}],
+  "$defs": {
+    "personNames": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "reference": {"type": "object", "additionalProperties": false, "required": ["citation"], "properties": {"citation": {"type": "string", "minLength": 1}, "doi": {"type": "string", "pattern": "^10\\.[0-9]{4,9}/\\S+$"}}},
+    "task": {"type": "object", "additionalProperties": false, "required": ["instructions", "unit_of_analysis", "classification_mode", "categories"], "properties": {"instructions": {"type": "string", "minLength": 1}, "unit_of_analysis": {"type": "string", "minLength": 1}, "classification_mode": {"type": "string", "enum": ["single_label", "multi_label"]}, "context": {"type": "string", "minLength": 1}, "categories": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/category"}}}},
+    "category": {"type": "object", "additionalProperties": false, "required": ["id", "label", "definition"], "properties": {"id": {"type": "string", "minLength": 1, "pattern": "\\S"}, "label": {"type": "string", "minLength": 1}, "definition": {"type": "string", "minLength": 1}, "inclusion_criteria": {"$ref": "#/$defs/nonEmptyStringArray"}, "exclusion_criteria": {"$ref": "#/$defs/nonEmptyStringArray"}, "coding_notes": {"type": "string", "minLength": 1}, "aliases": {"$ref": "#/$defs/nonEmptyStringArray"}}},
+    "example": {"type": "object", "additionalProperties": false, "required": ["text", "labels"], "properties": {"text": {"type": "string", "minLength": 1}, "labels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "context": {"type": "string", "minLength": 1}, "explanation": {"type": "string", "minLength": 1}}},
+    "nonEmptyStringArray": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}
+  </script>
+
+  <script type="application/json" id="sentiment-json">
+{
+  "$schema": "https://cca-schema.org/schema/0.1/schema.json",
+  "id": "https://cca-schema.org/codebooks/sentiment-analysis-reference",
+  "version": "1.0.0",
+  "title": "Three-class sentiment analysis",
+  "description": "Classifies the overall evaluative sentiment expressed in a text as positive, neutral, or negative.",
+  "language": "en",
+  "created_at": "2026-09-17",
+  "task": {
+    "instructions": "Assign exactly one category representing the overall evaluative sentiment expressed by the author or speaker toward the focal subject. Base the decision on evaluative language in the unit of analysis. Do not infer sentiment solely from the topic's generally positive or negative connotations. Treat factual statements without a discernible evaluation as neutral. When both positive and negative evaluations occur, assign the sentiment that is clearly dominant; assign neutral when they are balanced and no overall evaluation prevails. Interpret negation, intensifiers, idioms, and clearly supported irony or sarcasm compositionally. Use supplied context only to resolve references or meanings in the text being classified.",
+    "unit_of_analysis": "A single text passage supplied for classification.",
+    "classification_mode": "single_label",
+    "context": "Optional surrounding text may be used only to disambiguate references, quotations, irony, sarcasm, or the focal subject. Classify the sentiment expressed in the unit of analysis rather than the sentiment of the surrounding context.",
+    "categories": [
+      {"id": "positive", "label": "Positive", "definition": "The text expresses an overall favorable evaluation, approval, satisfaction, praise, hope, or other positive sentiment toward the focal subject.", "inclusion_criteria": ["The text explicitly praises, recommends, approves of, or expresses satisfaction with the focal subject.", "Positive evaluation clearly outweighs any negative evaluation.", "Negation or an idiomatic construction yields a favorable overall meaning."], "exclusion_criteria": ["Positive words occur only in a quotation or proposition that the author or speaker rejects.", "The text merely reports a desirable event without expressing or attributing an evaluation.", "Positive and negative evaluations are balanced without a prevailing overall sentiment."], "coding_notes": "Do not equate excitement, politeness, or a positive topic with a positive evaluation unless the passage conveys favorable sentiment.", "aliases": ["favorable"]},
+      {"id": "neutral", "label": "Neutral", "definition": "The text expresses no discernible overall positive or negative evaluation, or positive and negative evaluations are balanced without either prevailing.", "inclusion_criteria": ["The text is factual, descriptive, procedural, or interrogative without evaluative sentiment.", "Positive and negative evaluations are balanced and no overall position prevails.", "The available text and context do not support a positive or negative classification."], "exclusion_criteria": ["The sentiment is mild or implicit but nevertheless discernibly positive or negative.", "The text uses apparently neutral wording that has a clearly evaluative meaning in context.", "The text concerns a neutral topic but expresses a favorable or unfavorable evaluation of it."], "coding_notes": "Neutral is a substantive category, not a default for difficult cases when the text still supports a directional evaluation.", "aliases": ["no sentiment", "mixed or balanced"]},
+      {"id": "negative", "label": "Negative", "definition": "The text expresses an overall unfavorable evaluation, disapproval, dissatisfaction, criticism, concern, or other negative sentiment toward the focal subject.", "inclusion_criteria": ["The text explicitly criticizes, rejects, condemns, or expresses dissatisfaction with the focal subject.", "Negative evaluation clearly outweighs any positive evaluation.", "Negation, irony, sarcasm, or an idiomatic construction yields an unfavorable overall meaning."], "exclusion_criteria": ["Negative words occur only in a quotation or proposition that the author or speaker rejects.", "The text merely reports an undesirable event without expressing or attributing an evaluation.", "Positive and negative evaluations are balanced without a prevailing overall sentiment."], "coding_notes": "Do not infer negative sentiment merely because the passage discusses conflict, risk, illness, or another negatively connoted topic.", "aliases": ["unfavorable"]}
+    ]
+  },
+  "examples": [
+    {"text": "The update is excellent and makes the application much easier to use.", "labels": ["positive"], "explanation": "The passage explicitly praises both the quality and usability of the update."},
+    {"text": "The new version is not bad at all.", "labels": ["positive"], "explanation": "The negated negative expression conveys a favorable evaluation."},
+    {"text": "The committee met on Tuesday and published its report.", "labels": ["neutral"], "explanation": "The passage reports events without evaluating them."},
+    {"text": "The report identifies both advantages and disadvantages without recommending either option.", "labels": ["neutral"], "explanation": "The passage describes a balanced assessment and communicates no prevailing evaluation."},
+    {"text": "The service is unreliable, frustrating, and not worth the price.", "labels": ["negative"], "explanation": "Several explicit criticisms produce a clearly unfavorable overall evaluation."},
+    {"text": "Brilliant. It deleted all my work again.", "labels": ["negative"], "context": "The speaker is reacting immediately after a software failure.", "explanation": "The positive word is used sarcastically; the complete passage and context convey dissatisfaction."}
+  ]
+}
+  </script>
+
+  <script>
+    const schema = JSON.parse(document.getElementById('schema-json').textContent);
+    const sentiment = JSON.parse(document.getElementById('sentiment-json').textContent);
+
+    const minimal = {
+      $schema: schema.$id,
+      id: "sentiment-minimal",
+      version: "1.0.0",
+      title: "Sentiment analysis",
+      description: "Classifies the overall sentiment of a text.",
+      task: {
+        instructions: "Assign the dominant sentiment.",
+        unit_of_analysis: "text passage",
+        classification_mode: "single_label",
+        categories: [
+          { id: "positive", label: "Positive", definition: "The text expresses a favorable evaluation." },
+          { id: "neutral", label: "Neutral", definition: "The text expresses no prevailing evaluation." },
+          { id: "negative", label: "Negative", definition: "The text expresses an unfavorable evaluation." }
+        ]
+      }
+    };
+
+    const invalid = JSON.parse(JSON.stringify(minimal));
+    invalid.task.categories[2].id = "positive";
+    invalid.examples = [{ text: "It is acceptable.", labels: ["mixed", "positive"] }];
+    invalid.title = { en: "Sentiment", de: "Sentiment" };
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    }
+    function highlightJSON(value) {
+      const safe = escapeHtml(typeof value === 'string' ? value : JSON.stringify(value, null, 2));
+      return safe.replace(/(&quot;(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\&])*&quot;)(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?/g, (m, str, colon, bool) => {
+        if (str) return '<span class="' + (colon ? 'token-key' : 'token-string') + '">' + str + '</span>' + (colon || '');
+        if (bool) return '<span class="token-bool">' + m + '</span>';
+        return '<span class="token-number">' + m + '</span>';
+      });
+    }
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message; toast.classList.add('show');
+      clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+    function downloadJSON(data, name) {
+      const blob = new Blob([JSON.stringify(data, null, 2) + '\n'], { type: 'application/json' });
+      const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('hero-code').innerHTML = highlightJSON(minimal);
+    document.getElementById('sentiment-code').innerHTML = highlightJSON(sentiment);
+
+    const promptPreview = `You are performing the following classification task.\n\nTASK\n${sentiment.title}\n\nINSTRUCTIONS\n${sentiment.task.instructions}\n\nUNIT OF ANALYSIS\n${sentiment.task.unit_of_analysis}\n\nCATEGORIES\n${sentiment.task.categories.map(c => `${c.id} — ${c.label}\nDefinition: ${c.definition}`).join('\n\n')}\n\nReturn exactly one category ID.`;
+    document.getElementById('prompt-code').textContent = promptPreview;
+
+    const specs = [
+      ["$schema", "string", "required", "Identifies the validating JSON Schema.", '{ "type": "string", "format": "uri-reference" }'],
+      ["id", "string", "required", "Stable identifier for the codebook.", '{ "type": "string", "minLength": 1 }'],
+      ["version", "string", "required", "Semantic version of this codebook.", 'Pattern: major.minor.patch, with optional prerelease or build metadata.'],
+      ["title", "string", "required", "Human-readable name of the classification task.", 'A single-language string; multilingual objects are rejected.'],
+      ["description", "string", "required", "Short description of the measured construct.", '{ "type": "string", "minLength": 1 }'],
+      ["language", "string", "optional", "BCP 47 language tag for the document.", 'Examples: "en", "de", "en-US"'],
+      ["authors / maintainers", "string[]", "optional", "People or organizations responsible for the codebook.", 'Non-empty, unique strings.'],
+      ["created_at / modified_at", "date", "optional", "ISO 8601 provenance dates.", 'Example: "2026-09-17"'],
+      ["references", "object[]", "optional", "Citations with an optional DOI.", '{ "citation": "…", "doi": "10.…/…" }'],
+      ["task.instructions", "string", "required", "General coding instructions.", 'Markdown may be used as plain text.'],
+      ["task.unit_of_analysis", "string", "required", "What receives one classification.", 'Examples: sentence, paragraph, post, document.'],
+      ["task.classification_mode", "enum", "required", "Whether one or multiple categories may be assigned.", '"single_label" | "multi_label"'],
+      ["task.context", "string", "optional", "Additional context and how it may be used.", 'Describe both the context unit and its interpretive role.'],
+      ["task.categories", "object[]", "required", "Permitted classification categories.", 'At least one category; category IDs must be unique.'],
+      ["categories[].id", "string", "required", "Stable machine-facing identifier or manual code.", 'Examples: "positive", "102", "economic_costs"'],
+      ["categories[].label", "string", "required", "Human-facing category name.", 'A single-language string.'],
+      ["categories[].definition", "string", "required", "Conceptual and operational meaning.", 'Non-empty string.'],
+      ["inclusion_criteria", "string[]", "optional", "Conditions supporting assignment.", 'Non-empty, unique strings.'],
+      ["exclusion_criteria", "string[]", "optional", "Similar cases that must not be assigned.", 'Non-empty, unique strings.'],
+      ["coding_notes", "string", "optional", "Additional clarification for coders.", 'Non-empty string.'],
+      ["aliases", "string[]", "optional", "Alternative or historical category labels.", 'Non-empty, unique strings.'],
+      ["examples", "object[]", "optional", "Reference coding examples.", 'May be omitted for zero-shot codebooks.'],
+      ["examples[].text", "string", "required", "Text to classify.", 'Required whenever an example exists.'],
+      ["examples[].labels", "string[]", "required", "Expected category ID or IDs.", 'Exactly one for single-label tasks; one or more for multi-label.'],
+      ["examples[].context", "string", "optional", "Additional contextual material.", 'Non-empty string.'],
+      ["examples[].explanation", "string", "optional", "Why the labels apply.", 'Non-empty string.']
+    ];
+
+    const specBody = document.getElementById('spec-body');
+    function renderSpecs(filter = 'all') {
+      specBody.innerHTML = specs.filter(s => filter === 'all' || s[2] === filter).map((s, index) => `
+        <tr class="field-row" tabindex="0" data-spec-index="${index}" aria-expanded="false">
+          <td><code>${escapeHtml(s[0])}</code></td><td>${escapeHtml(s[1])}</td><td><span class="status ${s[2]}">${s[2]}</span></td><td>${escapeHtml(s[3])}</td>
+        </tr><tr class="detail-row"><td colspan="4"><div class="field-fragment">${escapeHtml(s[4])}</div></td></tr>`).join('');
+      specBody.querySelectorAll('.field-row').forEach(row => {
+        const toggle = () => { row.classList.toggle('open'); row.setAttribute('aria-expanded', row.classList.contains('open')); };
+        row.addEventListener('click', toggle); row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      });
+    }
+    renderSpecs();
+    document.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.filter').forEach(b => b.classList.remove('active')); button.classList.add('active'); renderSpecs(button.dataset.filter);
+    }));
+
+    document.getElementById('category-grid').innerHTML = sentiment.task.categories.map(c => `<article class="category"><h3>${escapeHtml(c.label)}</h3><p>${escapeHtml(c.definition)}</p><ul>${c.inclusion_criteria.slice(0,2).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></article>`).join('');
+    document.getElementById('example-cases').innerHTML = sentiment.examples.slice(1, 6, 2).map(e => `<article class="case"><strong>${escapeHtml(e.labels[0])}</strong><p>“${escapeHtml(e.text)}”<br><small>${escapeHtml(e.explanation)}</small></p></article>`).join('');
+
+    document.querySelectorAll('.example-tab').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.example-tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      button.classList.add('active'); button.setAttribute('aria-selected', 'true'); document.getElementById('tab-' + button.dataset.tab).classList.add('active');
+    }));
+
+    const pythonCode = `import json\nfrom jsonschema import Draft202012Validator, FormatChecker\n\nwith open("cca-schema-0.1.schema.json", encoding="utf-8") as f:\n    schema = json.load(f)\nwith open("codebook.cca.json", encoding="utf-8") as f:\n    codebook = json.load(f)\n\nvalidator = Draft202012Validator(schema, format_checker=FormatChecker())\nerrors = sorted(validator.iter_errors(codebook), key=lambda e: list(e.absolute_path))\n\nfor error in errors:\n    path = "/" + "/".join(map(str, error.absolute_path))\n    print(f"{path}: {error.message}")\n\nif not errors:\n    print("Structurally valid CCA codebook")`;
+    const jsCode = `import Ajv2020 from "ajv/dist/2020.js";\nimport addFormats from "ajv-formats";\n\nconst ajv = new Ajv2020({ allErrors: true });\naddFormats(ajv);\n\nconst validate = ajv.compile(schema);\nconst valid = validate(codebook);\n\nif (!valid) console.table(validate.errors);\nelse console.log("Structurally valid CCA codebook");`;
+    const cliCode = `check-jsonschema \\\n  --schemafile cca-schema-0.1.schema.json \\\n  codebook.cca.json\n\n# Structural validation must be followed by CCA integrity checks:\n# 1. category IDs are unique\n# 2. example labels reference existing IDs`;
+    document.getElementById('python-code').textContent = pythonCode;
+    document.getElementById('js-code').textContent = jsCode;
+    document.getElementById('cli-code').textContent = cliCode;
+    document.querySelectorAll('.code-tab').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.code-tab').forEach(b => b.classList.remove('active')); document.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
+      button.classList.add('active'); document.getElementById('code-' + button.dataset.codeTab).classList.add('active');
+    }));
+
+    function addError(errors, path, message, stage = 'structural') { errors.push({ path, message, stage }); }
+    function isObject(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
+    function checkString(v, path, errors, required = true) {
+      if (v === undefined && !required) return;
+      if (typeof v !== 'string' || !v.trim()) addError(errors, path, 'must be a non-empty string');
+    }
+    function checkNoExtra(obj, allowed, path, errors) {
+      if (!isObject(obj)) return;
+      Object.keys(obj).filter(k => !allowed.includes(k)).forEach(k => addError(errors, path + '/' + k, 'unknown property; v0.1 uses strict objects'));
+    }
+    function checkStringArray(value, path, errors, required = false) {
+      if (value === undefined && !required) return;
+      if (!Array.isArray(value) || value.length === 0) { addError(errors, path, 'must be a non-empty array of strings'); return; }
+      const seen = new Set();
+      value.forEach((v,i) => { checkString(v, `${path}/${i}`, errors); if (seen.has(v)) addError(errors, `${path}/${i}`, 'duplicate value'); seen.add(v); });
+    }
+    function validateCCA(doc) {
+      const errors = [];
+      if (!isObject(doc)) return [{ path: '/', message: 'document must be a JSON object', stage: 'structural' }];
+      const rootAllowed = ['$schema','id','version','title','description','language','authors','maintainers','created_at','modified_at','references','task','examples'];
+      checkNoExtra(doc, rootAllowed, '', errors);
+      ['$schema','id','version','title','description'].forEach(k => checkString(doc[k], '/' + k, errors));
+      if (typeof doc.version === 'string' && !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(doc.version)) addError(errors, '/version', 'must use semantic version syntax such as 1.0.0');
+      if (doc.language !== undefined && (typeof doc.language !== 'string' || !/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(doc.language))) addError(errors, '/language', 'must be a BCP 47 language tag');
+      ['authors','maintainers'].forEach(k => checkStringArray(doc[k], '/' + k, errors));
+      ['created_at','modified_at'].forEach(k => { if (doc[k] !== undefined && (typeof doc[k] !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(doc[k]) || Number.isNaN(Date.parse(doc[k] + 'T00:00:00Z')))) addError(errors, '/' + k, 'must be a valid ISO 8601 full date'); });
+      if (doc.references !== undefined) {
+        if (!Array.isArray(doc.references)) addError(errors, '/references', 'must be an array');
+        else doc.references.forEach((r,i) => { const p = `/references/${i}`; if (!isObject(r)) { addError(errors,p,'must be an object'); return; } checkNoExtra(r,['citation','doi'],p,errors); checkString(r.citation,p+'/citation',errors); if (r.doi !== undefined && (typeof r.doi !== 'string' || !/^10\.\d{4,9}\/\S+$/.test(r.doi))) addError(errors,p+'/doi','must be a DOI without URL prefix'); });
+      }
+      if (!isObject(doc.task)) addError(errors, '/task', 'is required and must be an object');
+      else {
+        const t = doc.task; checkNoExtra(t,['instructions','unit_of_analysis','classification_mode','context','categories'],'/task',errors);
+        checkString(t.instructions,'/task/instructions',errors); checkString(t.unit_of_analysis,'/task/unit_of_analysis',errors); if (t.context !== undefined) checkString(t.context,'/task/context',errors);
+        if (!['single_label','multi_label'].includes(t.classification_mode)) addError(errors,'/task/classification_mode','must be "single_label" or "multi_label"');
+        if (!Array.isArray(t.categories) || t.categories.length === 0) addError(errors,'/task/categories','must contain at least one category');
+        else {
+          const ids = new Set();
+          t.categories.forEach((c,i) => {
+            const p = `/task/categories/${i}`;
+            if (!isObject(c)) { addError(errors,p,'must be an object'); return; }
+            checkNoExtra(c,['id','label','definition','inclusion_criteria','exclusion_criteria','coding_notes','aliases'],p,errors);
+            ['id','label','definition'].forEach(k => checkString(c[k],p+'/'+k,errors));
+            ['inclusion_criteria','exclusion_criteria','aliases'].forEach(k => checkStringArray(c[k],p+'/'+k,errors));
+            if (c.coding_notes !== undefined) checkString(c.coding_notes,p+'/coding_notes',errors);
+            if (typeof c.id === 'string') { if (ids.has(c.id)) addError(errors,p+'/id',`duplicate category ID "${c.id}"`,'semantic'); ids.add(c.id); }
+          });
+          if (doc.examples !== undefined) {
+            if (!Array.isArray(doc.examples)) addError(errors,'/examples','must be an array');
+            else doc.examples.forEach((e,i) => {
+              const p = `/examples/${i}`;
+              if (!isObject(e)) { addError(errors,p,'must be an object'); return; }
+              checkNoExtra(e,['text','labels','context','explanation'],p,errors); checkString(e.text,p+'/text',errors);
+              if (e.context !== undefined) checkString(e.context,p+'/context',errors); if (e.explanation !== undefined) checkString(e.explanation,p+'/explanation',errors);
+              checkStringArray(e.labels,p+'/labels',errors,true);
+              if (Array.isArray(e.labels)) {
+                if (t.classification_mode === 'single_label' && e.labels.length !== 1) addError(errors,p+'/labels','must contain exactly one label for a single-label task');
+                e.labels.forEach((label,j) => { if (typeof label === 'string' && !ids.has(label)) addError(errors,`${p}/labels/${j}`,`unknown category ID "${label}"`,'semantic'); });
+              }
+            });
+          }
+        }
+      }
+      return errors;
+    }
+
+    const input = document.getElementById('validator-input');
+    input.value = JSON.stringify(sentiment, null, 2);
+    function setInput(doc) { input.value = JSON.stringify(doc, null, 2); document.getElementById('validation-result').innerHTML = '<div class="result-empty"><div><strong>Ready to validate</strong><br><span>Select Validate codebook to run all checks.</span></div></div>'; }
+    document.getElementById('load-sentiment').addEventListener('click', () => setInput(sentiment));
+    document.getElementById('load-minimal').addEventListener('click', () => setInput(minimal));
+    document.getElementById('load-invalid').addEventListener('click', () => setInput(invalid));
+    document.getElementById('format-button').addEventListener('click', () => { try { input.value = JSON.stringify(JSON.parse(input.value), null, 2); showToast('JSON formatted'); } catch { showToast('Fix JSON syntax first'); } });
+    document.getElementById('file-input').addEventListener('change', event => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { input.value = reader.result; showToast('File loaded locally'); }; reader.readAsText(file); });
+    document.getElementById('validate-button').addEventListener('click', () => {
+      const result = document.getElementById('validation-result'); let doc;
+      try { doc = JSON.parse(input.value); } catch (error) {
+        result.className = 'validator-card result bad'; result.innerHTML = `<div class="result-head"><div class="result-icon">×</div><div><h3>Invalid JSON</h3><p>Parsing stopped before schema validation.</p></div></div><ul class="checks"><li class="error">${escapeHtml(error.message)}<span class="path">JSON syntax</span></li></ul>`; return;
+      }
+      const errors = validateCCA(doc); const structural = errors.filter(e => e.stage === 'structural'); const semantic = errors.filter(e => e.stage === 'semantic');
+      if (!errors.length) {
+        const categories = doc.task.categories.length, examples = Array.isArray(doc.examples) ? doc.examples.length : 0;
+        result.className = 'validator-card result ok'; result.innerHTML = `<div class="result-head"><div class="result-icon">✓</div><div><h3>CCA-conformant</h3><p>Structural and integrity checks passed.</p></div></div><ul class="checks"><li class="ok">Valid CCA Schema v0.1 structure</li><li class="ok">${categories} unique categor${categories === 1 ? 'y' : 'ies'}</li><li class="ok">${examples} example${examples === 1 ? '' : 's'} with valid label references</li><li class="ok">${escapeHtml(doc.task.classification_mode)} cardinality satisfied</li></ul>`;
+      } else {
+        result.className = 'validator-card result bad'; result.innerHTML = `<div class="result-head"><div class="result-icon">×</div><div><h3>Not conformant</h3><p>${structural.length} structural · ${semantic.length} integrity error${semantic.length === 1 ? '' : 's'}</p></div></div><ul class="checks">${errors.map(e => `<li class="error">${escapeHtml(e.message)}<span class="path">${escapeHtml(e.stage)} · ${escapeHtml(e.path || '/')}</span></li>`).join('')}</ul>`;
+      }
+    });
+
+    document.querySelectorAll('[data-download]').forEach(button => button.addEventListener('click', () => {
+      if (button.dataset.download === 'schema') downloadJSON(schema, 'cca-schema-0.1.schema.json');
+      else downloadJSON(sentiment, 'sentiment-analysis-reference.cca.json');
+    }));
+    document.querySelectorAll('[data-copy-target]').forEach(button => button.addEventListener('click', async () => {
+      const text = document.getElementById(button.dataset.copyTarget).textContent;
+      try { await navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } catch { showToast('Copy unavailable'); }
+    }));
+  </script>
+<script type="module">import { mountSiteWidget } from "/_sites/dispatch-assets/sites-preview.js";mountSiteWidget({"kind":"preview-annotations","environment":"production","chatgptOrigin":"https://chatgpt.com","locale":"de-DE","accountId":"2450b376-e0cd-457b-b3de-ff0ec69f74d0","projectId":"appgprj_6ab2542a56888191998873976f8561de","projectTitle":"CCA Schema"});</script>
+
+<div data-sites-widget="preview-annotations" popover="manual"></div></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
